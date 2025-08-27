@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Disaster Alert App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+    #status { margin-top: 20px; font-size: 18px; color: darkblue; }
+  </style>
+</head>
+<body>
+  <h1>🌊 Disaster Alert App</h1>
+  <p>Check if you are in a flood or disaster risk area.</p>
+  <button onclick="getLocation()">📍 Detect My Location</button>
+
+  <div id="status">Waiting for location...</div>
+
+  <script>
+    function getLocation() {
+      const status = document.getElementById("status");
+
+      if (!navigator.geolocation) {
+        status.innerHTML = "❌ Geolocation is not supported by your browser.";
+        return;
+      }
+
+      status.innerHTML = "⏳ Detecting your location... Please allow permission.";
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+
+          status.innerHTML = `✅ Location detected! <br> Latitude: ${lat} <br> Longitude: ${lon} <br><br> 
+          (Alerts will be shown here in future 🚨)`;
+        },
+        (error) => {
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              status.innerHTML = "❌ Location access denied. Please allow location.";
+              break;
+            case error.POSITION_UNAVAILABLE:
+              status.innerHTML = "⚠️ Location unavailable. Try again.";
+              break;
+            case error.TIMEOUT:
+              status.innerHTML = "⏱️ Location request timed out.";
+              break;
+            default:
+              status.innerHTML = "❌ An unknown error occurred.";
+          }
+        }
+      );
+    }
+  </script>
+</body>
+</html>
