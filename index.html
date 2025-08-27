@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Disaster Alert App</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f4f4f4; }
+    h1 { color: #d32f2f; }
+    button { padding: 10px 20px; margin: 10px 0; cursor: pointer; }
+    .alert { background: #ffcccc; padding: 10px; margin: 10px 0; border-radius: 5px; }
+    .section { background: #fff; padding: 15px; margin: 15px 0; border-radius: 8px; }
+    a { color: #d32f2f; text-decoration: none; }
+  </style>
+</head>
+<body>
+
+  <h1>Disaster Alert App</h1>
+
+  <!-- Location -->
+  <div class="section">
+    <h2>Your Location</h2>
+    <button onclick="getLocation()">Detect My Location</button>
+    <p id="location">Location: Not detected</p>
+  </div>
+
+  <!-- Alerts -->
+  <div class="section">
+    <h2>Latest Alerts</h2>
+    <div id="alerts">Click "Detect My Location" to load alerts...</div>
+  </div>
+
+  <!-- Emergency Info -->
+  <div class="section">
+    <h2>Emergency Info</h2>
+    <ul>
+      <li>Move to higher ground.</li>
+      <li>Avoid walking/driving in flooded areas.</li>
+      <li>Keep an emergency kit ready.</li>
+    </ul>
+  </div>
+
+  <!-- Emergency Contacts -->
+  <div class="section">
+    <h2>Emergency Contacts</h2>
+    <ul>
+      <li><a href="tel:15">Police: 15</a></li>
+      <li><a href="tel:16">Fire: 16</a></li>
+      <li><a href="tel:1122">Rescue: 1122</a></li>
+    </ul>
+  </div>
+
+  <script>
+    let userLat = null;
+    let userLon = null;
+
+    function getLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(showPosition, showError);
+      } else {
+        document.getElementById("location").innerText = "Geolocation not supported.";
+      }
+    }
+
+    function showPosition(position) {
+      userLat = position.coords.latitude;
+      userLon = position.coords.longitude;
+      document.getElementById("location").innerText = 
+        `Latitude: ${userLat.toFixed(2)}, Longitude: ${userLon.toFixed(2)}`;
+      loadAlerts();
+    }
+
+    function showError(error) {
+      document.getElementById("location").innerText = "Error detecting location.";
+    }
+
+    function loadAlerts() {
+      const url = "https://www.gdacs.org/XML/RSS.xml";
+      const proxyUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent(url);
+
+      fetch(proxyUrl)
+        .then(response => response.json())
+        .then(data => {
+          const parser = new DOMParser();
+          const xml = parser.parseFromString(data.contents, "application/xml");
+          const items = xml.querySelectorAll("item");
+          
+          const alertsDiv = document.getElementById("alerts");
+          alertsDiv.innerHTML = "";
+
+          if (items.length === 0) {
+            alertsDiv.innerText = "No active alerts at the moment.";
+            return;
+          }
